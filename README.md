@@ -4,8 +4,7 @@ A large amount of code inside comes from https://github.com/twri/sdxl_prompt_sty
 The functionality of this project is related to https://github.com/twri/sdxl_prompt_styler Highly overlapping, 
 the only purpose of creating this project is because there are too many styles when selecting, 
 resulting in a long and inconvenient dropdown box. Therefore, 
-the introduction of https://www.nodecafe.org/package/pythongosssss_ComfyUI-Custom-Scripts Some node functions can add secondary menus.
-
+To address this issue, this project has added a secondary menu to the style.
 
 
 Installing
