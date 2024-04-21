@@ -12,7 +12,7 @@ Installing
 1. Install Git
 2. Go to the folder \ComfyUI \ custom_modes
 3. Right click on 【 Open in Terminal 】
-4. Enter git clone in the command window https://github.com/AlekPet/ComfyUI_Custom_Nodes_AlekPet.githttps://github.com/ertu110/sdxl_prompt_style.git
+4. Enter git clone in the command window https://github.com/ertu110/sdxl_prompt_style.git
 5. Restart Comflyui
 
 
