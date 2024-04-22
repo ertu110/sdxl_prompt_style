@@ -1,10 +1,13 @@
-This project is a complete benchmark https://github.com/twri/sdxl_prompt_styler
-A large amount of code inside comes from https://github.com/twri/sdxl_prompt_styler Project and https://www.nodecafe.org/package/pythongosssss_ComfyUI-Custom-Scripts project
 
-The functionality of this project is related to https://github.com/twri/sdxl_prompt_styler Highly overlapping, 
-the only purpose of creating this project is because there are too many styles when selecting, 
-resulting in a long and inconvenient dropdown box. Therefore, 
-To address this issue, this project has added a secondary menu to the style.
+
+The original sdxl_prompt_style project was inconvenient to choose due to too many styles when selecting styles,
+To address this issue, this project has added a submenu and added a preview of the renderings, making selection easier
+
+![Snipaste_2024-04-22_20-38-41](https://github.com/ertu110/sdxl_prompt_style/assets/23519472/9967eb6f-365a-4f38-95c9-f7fcef7281a6)
+
+
+
+
 
 
 Installing
@@ -14,5 +17,18 @@ Installing
 3. Right click on 【 Open in Terminal 】
 4. Enter git clone in the command window https://github.com/ertu110/sdxl_prompt_style.git
 5. Restart Comflyui
+
+
+
+cite
+
+https://github.com/pythongosssss/ComfyUI-Custom-Scripts
+
+https://github.com/twri/sdxl_prompt_styler
+
+
+
+
+
 
 
