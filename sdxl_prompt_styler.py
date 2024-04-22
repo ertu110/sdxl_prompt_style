@@ -321,7 +321,7 @@ class SDXLPromptStyler:
         # Process and combine prompts in templates
         # The function replaces the positive prompt placeholder in the template,
         # and combines the negative prompt with the template's negative prompt, if they exist.
-        kwargs["style"] = kwargs["style"]["content"].split("/")[-1]
+        style = style["content"].split("/")[-1]
         text_positive_styled, text_negative_styled = read_sdxl_templates_replace_and_combine(self.json_data, style, text_positive, text_negative)
 
         # If style_negative is disabled, set text_negative_styled to text_negative
@@ -382,7 +382,7 @@ class SDXLPromptStylerAdvanced:
         # Process and combine prompts in templates
         # The function replaces the positive prompt placeholder in the template,
         # and combines the negative prompt with the template's negative prompt, if they exist.
-        kwargs["style"] = kwargs["style"]["content"].split("/")[-1]
+        style = style["content"].split("/")[-1]
         text_positive_g_styled, text_positive_l_styled, text_positive_styled, text_negative_g_styled, text_negative_l_styled, text_negative_styled = read_sdxl_templates_replace_and_combine_advanced(self.json_data, style, text_positive_g, text_positive_l, text_negative, negative_prompt_to, copy_to_l)
 
         # If logging is enabled (log_prompt is set to "Yes"), 
