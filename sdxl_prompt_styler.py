@@ -1,5 +1,16 @@
 import json
 import os
+import numpy as np
+import folder_paths
+from PIL import Image, ImageOps, ImageSequence
+import hashlib
+
+import inspect
+from server import PromptServer
+import folder_paths
+from server import PromptServer
+from aiohttp import web
+
 
 def read_json_file(file_path):
     """
@@ -64,6 +75,7 @@ def load_styles_from_directory(directory):
                 combined_data.append(item)
 
     unique_style_names = [item['name'] for item in combined_data if isinstance(item, dict) and 'name' in item]
+
     return combined_data, unique_style_names
 
 
@@ -104,7 +116,7 @@ def split_template_advanced(template: str) -> tuple:
 def replace_prompts_in_template(template, positive_prompt, negative_prompt):
     """
     Replace the placeholders in a given template with the provided prompts.
-    
+
     Args:
     - template (dict): The template containing prompt placeholders.
     - positive_prompt (str): The positive prompt to replace '{prompt}' in the template.
@@ -153,7 +165,7 @@ def deduplicate_merge(prompt_1, prompt_2):
 def replace_prompts_in_template_advanced(template, positive_prompt_g, positive_prompt_l, negative_prompt, negative_prompt_to, copy_to_l):
     """
     Replace the placeholders in a given template with the provided prompts and split them accordingly.
-    
+
     Args:
     - template (dict): The template containing prompt placeholders.
     - positive_prompt_g (str): The main positive prompt to replace '{prompt}' in the template.
@@ -192,7 +204,7 @@ def replace_prompts_in_template_advanced(template, positive_prompt_g, positive_p
 def read_sdxl_templates_replace_and_combine(json_data, template_name, positive_prompt, negative_prompt):
     """
     Find a specific template by its name, then replace and combine its placeholders with the provided prompts.
-    
+
     Args:
     - json_data (list): The list of templates.
     - template_name (str): The name of the desired template.
@@ -211,11 +223,11 @@ def read_sdxl_templates_replace_and_combine(json_data, template_name, positive_p
         return replace_prompts_in_template(template, positive_prompt, negative_prompt)
     else:
         return positive_prompt, negative_prompt
-    
+
 def read_sdxl_templates_replace_and_combine_advanced(json_data, template_name, positive_prompt_g, positive_prompt_l, negative_prompt, negative_prompt_to, copy_to_l):
     """
     Find a specific template by its name, then replace and combine its placeholders with the provided prompts in an advanced manner.
-    
+
     Args:
     - json_data (list): The list of templates.
     - template_name (str): The name of the desired template.
@@ -239,16 +251,38 @@ def read_sdxl_templates_replace_and_combine_advanced(json_data, template_name, p
         return positive_prompt_g, positive_prompt_l, f"{positive_prompt_g} . {positive_prompt_l}", negative_prompt, negative_prompt, negative_prompt
 
 
-def populate_items(names):
-    for idx, item_name in enumerate(names):
-        foldername = item_name.split('-')[0]
-        names[idx] = {
-            "content": foldername+'\\'+item_name,
-             "image": "",
-        }
-    names.sort(key=lambda i: i["content"].lower())
 
 
+@PromptServer.instance.routes.get("/preview/{name}")
+async def view(request):
+    name = request.match_info["name"]
+
+    image_path = name
+    filename = os.path.basename(image_path)
+    return web.FileResponse(image_path, headers={"Content-Disposition": f"filename=\"{filename}\""})
+
+
+def populate_items(styles, item_type):
+    for idx, item_name in enumerate(styles):
+        current_directory = os.path.dirname(os.path.abspath(__file__))
+        preview_path = os.path.join(current_directory, item_type, item_name + ".png")
+
+        if len(item_name.split('-')) > 1:
+            content = f"{item_name.split('-')[0]} /{item_name}"
+        else:
+            content = item_name
+
+        if os.path.exists(preview_path):
+            styles[idx] = {
+                "content": content,
+                "preview": preview_path
+            }
+        else:
+            print(f"Warning: Preview image '{item_name}.png' not found for item '{item_name}'")
+            styles[idx] = {
+                "content": content,
+                "preview": None
+            }
 
 
 
@@ -271,10 +305,12 @@ class SDXLPromptStyler:
                 "style_negative": ("BOOLEAN", {"default": True, "label_on": "yes", "label_off": "no"}),
             },
         }
-        names = types["required"]["style"][0]
-        populate_items(names)
+
+        style = types["required"]["style"][0]
+        populate_items(style, "images")
         return types
-        
+
+
 
     RETURN_TYPES = ('STRING','STRING',)
     RETURN_NAMES = ('text_positive','text_negative',)
@@ -285,7 +321,7 @@ class SDXLPromptStyler:
         # Process and combine prompts in templates
         # The function replaces the positive prompt placeholder in the template,
         # and combines the negative prompt with the template's negative prompt, if they exist.
-        style = style['content'].split('\\')[1]
+        kwargs["style"] = kwargs["style"]["content"].split("/")[-1]
         text_positive_styled, text_negative_styled = read_sdxl_templates_replace_and_combine(self.json_data, style, text_positive, text_negative)
 
         # If style_negative is disabled, set text_negative_styled to text_negative
@@ -299,8 +335,8 @@ class SDXLPromptStyler:
             text_negative_styled = text_negative
             if log_prompt:
                 print(f"style_negative: disabled")
- 
-        # If logging is enabled (log_prompt is set to "Yes"), 
+
+        # If logging is enabled (log_prompt is set to "Yes"),
         # print the style, positive and negative text, and positive and negative prompts to the console
         if log_prompt:
             print(f"style: {style}")
@@ -310,7 +346,6 @@ class SDXLPromptStyler:
             print(f"text_negative_styled: {text_negative_styled}")
 
         return text_positive_styled, text_negative_styled
-    
 
 class SDXLPromptStylerAdvanced:
 
@@ -332,11 +367,12 @@ class SDXLPromptStylerAdvanced:
                 "log_prompt": ("BOOLEAN", {"default": False, "label_on": "yes", "label_off": "no"}),
             },
         }
-        names = types["required"]["style"][0]
-        populate_items(names)
+
+        style = types["required"]["style"][0]
+        populate_items(style, "images")
         return types
-        
-        
+
+
     RETURN_TYPES = ('STRING','STRING','STRING','STRING','STRING','STRING',)
     RETURN_NAMES = ('text_positive_g','text_positive_l','text_positive','text_negative_g','text_negative_l','text_negative',)
     FUNCTION = 'prompt_styler_advanced'
@@ -346,9 +382,9 @@ class SDXLPromptStylerAdvanced:
         # Process and combine prompts in templates
         # The function replaces the positive prompt placeholder in the template,
         # and combines the negative prompt with the template's negative prompt, if they exist.
-        style = style['content'].split('\\')[1]
+        kwargs["style"] = kwargs["style"]["content"].split("/")[-1]
         text_positive_g_styled, text_positive_l_styled, text_positive_styled, text_negative_g_styled, text_negative_l_styled, text_negative_styled = read_sdxl_templates_replace_and_combine_advanced(self.json_data, style, text_positive_g, text_positive_l, text_negative, negative_prompt_to, copy_to_l)
- 
+
         # If logging is enabled (log_prompt is set to "Yes"), 
         # print the style, positive and negative text, and positive and negative prompts to the console
         if log_prompt:

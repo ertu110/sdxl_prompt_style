@@ -1,16 +1,41 @@
 import { app } from "../../../scripts/app.js";
 import { ComfyWidgets } from "../../../scripts/widgets.js";
 import { $el } from "../../../scripts/ui.js";
-import { api } from "../../../scripts/api.js";
-
-
 
 app.registerExtension({
-	name: "pysssss.Combo++",
+	name: "preview.Combo++",
 	init() {
-		
+		$el("style", {
+			textContent: `
+				.litemenu-entry {
+					position: relative;
+				}
+				.litemenu-entry:hover .preview-combo-image {
+					display: block;
+					
+				}
+				.preview-combo-image {
+					display: none;
+					position: absolute;
+					left: 120px;
+					top: -120px;
+					width: 384px;
+					height: 384px;
+					background-size: contain;
+					background-position: top right;
+					background-repeat: no-repeat;
+					filter: brightness(65%);
+				}
+			`,
+			parent: document.body,
+		});
 
-		
+		const submenuSetting = app.ui.settings.addSetting({
+			id: "preview.Combo++.Submenu",
+			name: "🐍 Enable submenu in custom nodes",
+			defaultValue: true,
+			type: "boolean",
+		});
 
 		// Ensure hook callbacks are available
 		const getOrSet = (target, name, create) => {
@@ -26,26 +51,26 @@ app.registerExtension({
 			}
 		}
 		// // Checks if this is a custom combo item
-		const isCustomItem = (value) => value && typeof value === "object" && "image" in value && value.content;
+		const isCustomItem = (value) => value && typeof value === "object" && "preview" in value && value.content;
 		// Simple check for what separator to split by
 		const splitBy = (navigator.platform || navigator.userAgent).includes("Win") ? /\/|\\/ : /\//;
 
-		
-		function encodeRFC3986URIComponent(str) {
-			return encodeURIComponent(str).replace(
-				/[!'()*]/g,
-				(c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`,
-			);
-		}
+		contextMenuHook["ctor"].push(function (values, options) {
+			// Copy the class from the parent so if we are dark we are also dark
+			// this enables the filter box
+			if (options.parentMenu?.options?.className === "dark") {
+				options.className = "dark";
+			}
+		});
 
 		// After an element is created for an item, add an image if it has one
 		contextMenuHook["addItem"].push(function (el, menu, [name, value, options]) {
-			if (el && isCustomItem(value) && value?.image && !value.submenu) {
-				el.textContent += " *";
-				$el("div.pysssss-combo-image", {
+			if (el && isCustomItem(value) && value?.preview && !value.submenu) {
+				// el.textContent += " *";
+				$el("div.preview-combo-image", {
 					parent: el,
 					style: {
-						backgroundImage: `url(/pysssss/view/${encodeRFC3986URIComponent(value.image)})`,
+						backgroundImage: `url(/preview/${encodeURIComponent(value.preview)})`,
 					},
 				});
 			}
@@ -112,7 +137,13 @@ app.registerExtension({
 					get() {
 						let v = values;
 
-						v = buildMenu(res.widget, values);
+						if (submenuSetting.value) {
+							if (!menu) {
+								// Only build the menu once
+								menu = buildMenu(res.widget, values);
+							}
+							v = menu;
+						}
 
 						const valuesIncludes = v.includes;
 						v.includes = function (searchElement) {
@@ -170,15 +201,5 @@ app.registerExtension({
 
 			return res;
 		};
-	},
-	async beforeRegisterNodeDef(nodeType, nodeData, app) {
-		const isStyle = nodeType.comfyClass === "SDXLPromptStyler";
-		if (isStyle) {
-			const onAdded = nodeType.prototype.onAdded;
-			nodeType.prototype.onAdded = function () {
-				ComfyWidgets["COMBO"](this, "example", [[""]], app);
-			}
-			
-		}
 	},
 });
