@@ -140,7 +140,7 @@
         "negative_prompt": "natural, rustic, primitive, organic, simplistic"
     },
     {
-        "name": "futuristic-biomechanical cyberpunk",
+        "name": "futuristic-cyberpunk",
         "prompt": "biomechanical cyberpunk {prompt} . cybernetics, human-machine fusion, dystopian, organic meets artificial, dark, intricate, highly detailed",
         "negative_prompt": "natural, colorful, deformed, sketch, low contrast, watercolor"
     },
@@ -385,7 +385,7 @@
         "negative_prompt": "photo, 3D, realistic, drawing, painting, high detail, disfigured"
     },
     {
-        "name": "papercraft-papercut shadow box",
+        "name": "papercraft-papercut shadow",
         "prompt": "3D papercut shadow box of {prompt} . layered, dimensional, depth, silhouette, shadow, papercut, handmade, high contrast",
         "negative_prompt": "painting, drawing, photo, 2D, flat, high detail, blurry, noisy, disfigured"
     },
@@ -395,7 +395,7 @@
         "negative_prompt": "2D, flat, noisy, blurry, painting, drawing, photo, deformed"
     },
     {
-        "name": "papercraft-thick layered papercut",
+        "name": "papercraft-layered papercut",
         "prompt": "thick layered papercut art of {prompt} . deep 3D, volumetric, dimensional, depth, thick paper, high stack, heavy texture, tangible layers",
         "negative_prompt": "2D, flat, thin paper, low stack, smooth texture, painting, drawing, photo, deformed"
     },
